@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Agatha Christie Analysis Hub</title>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        
+        body, html { margin: 0; padding: 0; height: 100%; background: #1a1a1a; font-family: 'Courier New', monospace; color: #dcd3bc; overflow: hidden; }
+        
+        #main-menu {
+        
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: radial-gradient(circle, #2c0000 0%, #1a1a1a 100%);
+        }
+
+        h1 { color: #8e0000; text-shadow: 2px 2px #000; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 3px; }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 600px;
+        }
+
+        .menu-grid-vertical {
+            display: flex;
+            flex-direction: column; 
+            gap: 20px;              
+            align-items: center;    
+            width: 200px;           
+
+}
+        .menu-grid-horizontal {
+            display: flex;
+            flex-direction: row;   
+            gap: 20px;             
+            justify-content: center; 
+}
+
+        .novel-btn {
+            background: #dcd3bc;
+            color: #1a1a1a;
+            border: 2px solid #8e0000;
+            padding: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .novel-btn:hover {
+            background: #8e0000;
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(142, 0, 0, 0.5);
+        }
+
+        .back-btn {
+            position: static;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+            background: #8e0000;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+
+        #graph-container {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .screen {
+            display: none;  
+            position: absolute; 
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;      
+            background: radial-gradient(circle, #2c0000 0%, #1a1a1a 100%);
+            overflow-y: auto;   
+            z-index: 10;
+}
+
+        #intro-screen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;  
+            gap: 20px;
+            height: 100vh;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            text-align: center;
+            overflow-y: auto;  
+}
+
+
+        #quiz-box {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            background: rgba(220, 211, 188, 0.95);
+            border: 2px solid #8e0000;
+            padding: 15px;
+            z-index: 15;
+            font-size: 13px;
+        }
+
+        #quiz-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+
+        .quiz-answer {
+            background: #1a1a1a;
+            color: #dcd3bc;
+            border: 1px solid #8e0000;
+            padding: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+        }
+
+        .quiz-answer:hover {
+            background: #8e0000;
+            color: #fff;
+        }
+        .quiz-answer.correct {
+            background: #1b7f3b;
+            color: #fff;
+            border-color: #1b7f3b;
+        }
+
+        .quiz-answer.wrong {
+                background: #8e0000;
+                color: #fff;
+                border-color: #8e0000;
+            }
+
+        .quiz-answer.disabled {
+                pointer-events: none;
+                opacity: 0.8;
+            }
+        .menu-buttons {
+                position: absolute;   
+                right: 10px;   
+                left: auto;  
+
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+
+                z-index: 1000; 
+}
+        .agatha-portrait {
+                max-width: 250px;      
+                width: 100%;           
+                height: auto;          
+                border: 3px solid #8e0000;
+                border-radius: 12px;
+                margin-bottom: 30px;   
+                box-shadow: 0 0 20px rgba(0,0,0,0.6);
+                transition: transform 0.3s;
+}
+
+    
+
+        #start-screen {
+                display: flex;
+                flex-direction: column; 
+                justify-content: center; 
+                align-items: center;     
+                gap: 20px;               
+                height: 100vh;
+        }
+        .intro-image {
+                max-width: 350px;  
+                width: 100%;       
+                height: auto;
+                border: 3px solid #8e0000;
+                border-radius: 12px;
+                margin-bottom: 20px;
+                box-shadow: 0 0 20px rgba(0,0,0,0.6);
+                transition: transform 0.3s;
+}
+
+        .novels-image {
+                max-width: 300px;        
+                width: 100%;             
+                height: auto;            
+                border: 3px solid #8e0000;
+                border-radius: 12px;
+                margin-bottom: 30px;     
+                box-shadow: 0 0 20px rgba(0,0,0,0.6);
+                transition: transform 0.3s;
+}
+
+
+        .summary-image {
+                max-width: 350px;     
+                width: 100%;
+                height: auto;
+
+                display: block;
+                margin: 30px auto;    
+
+                border: 3px solid #8e0000;
+                border-radius: 12px;
+                box-shadow: 0 0 20px rgba(0,0,0,0.6);
+
+                transition: transform 0.3s;
+}
+        #badges-container {
+                display: flex;
+                gap: 20px;
+                flex-wrap: wrap;
+                justify-content: center;
+        }
+
+        .badge {
+                width: 160px;
+                text-align: center;
+                padding: 10px;
+                border-radius: 12px;
+                background: #f5f5f5;
+        }
+
+        .badge-icon {
+                width: 80px;
+                height: 80px;
+        }
+
+        .locked {
+                 filter: grayscale(100%) opacity(0.4);
+        }
+
+        .badge img {
+                transition: transform 0.3s;
+        }
+        .badge img:hover {
+                 transform: scale(1.2);
+        }
+        .interactive-btn {
+                transition: all 0.3s;
+                cursor: pointer;
+        }
+
+        .interactive-btn:hover {
+                transform: scale(1.05);
+                box-shadow: 0 0 15px rgba(142, 0, 0, 0.5);
+        }
+        #badge-notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #8e0000;
+                color: #fff;
+                border-radius: 12px;
+                padding: 15px 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                box-shadow: 0 0 20px rgba(0,0,0,0.6);
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                z-index: 9999;
+                opacity: 0;
+                transform: translateY(-50px);
+                transition: all 0.5s ease;
+        }
+
+        #badge-notification.show {
+                opacity: 1;
+                transform: translateY(0);
+                }
+
+        #badge-notification img {
+                width: 40px;
+                height: 40px;
+        }
+        .menu-note {
+                max-width: 200px;
+                color: #dcd3bc;
+                font-size: 14px;
+                line-height: 1.5;
+                background: rgba(0,0,0,0.5);
+                border: 2px solid #8e0000;
+                border-radius: 12px;
+                padding: 15px;
+                font-family: 'Courier New', monospace;
+                box-shadow: 0 0 15px rgba(0,0,0,0.7);
+}
+
+        .menu-note.left-note {
+                text-align: left;
+            }
+
+        .menu-note.right-note {
+                 text-align: left;
+}
+
+
+        @media (max-width: 1100px) {
+                .menu-wrapper {
+                    flex-direction: column;
+                    gap: 30px;
+                }
+                .menu-note {
+                    max-width: 90%;
+                }
+}
+
+
+        #mynetwork { width: 100vw; height: 100vh; background: #111; }
+        .legend { position: absolute; top: 20px; left: 20px; background: rgba(220, 211, 188, 0.9); padding: 15px; border-radius: 4px; z-index: 10; width: 250px; }
+    </style>
+</head>
+<body>
+    <div id="start-screen" class="screen" >
+    <img src="christie.png" 
+         alt="Agatha Christie Portrait"
+         class="agatha-portrait">
+
+    <h1>Agatha Christie's Archive</h1>
+    <div class="menu-grid-horizontal">
+        <button class="novel-btn" onclick="showIntro()">Introduction</button>
+        <button class="novel-btn" onclick="showNovels()">Novels</button>
+        <button class="novel-btn" onclick="showAchievements()">Achievements</button>
+
+        
+    </div>
+</div>
+        
+
+<div id="intro-screen" class="screen">
+
+    <button class="back-btn interactive-btn" onclick="showStart()">← Back</button>
+    <div style="max-width:700px; margin:100px auto; padding:30px; background:#111; border:2px solid #8e0000;">
+       <h2 style="color:#8e0000;">Introduction</h2>
+
+        <p>
+        This project explores the intricate networks of characters in the detective novels of Agatha Christie, one of the most celebrated mystery writers of the 20th century. Using the techniques of <b>Social Network Analysis (SNA)</b>, we visualize and quantify the relationships between characters, revealing patterns and structures that might otherwise remain hidden in the narrative.
+        </p>
+
+        <p>
+        SNA is a set of methods and tools used to study the relationships and interactions within a group of interconnected entities, known as <i>nodes</i>. In the context of literature, nodes typically represent characters, and edges represent interactions such as dialogue, shared scenes, or plot-driven connections. By applying SNA to novels, we can uncover the relative importance of characters, detect central figures, and identify subgroups or communities within the story.
+        </p>
+
+        <p>
+        Analyzing narrative structures through SNA not only provides a visual and quantitative understanding of the text, but also allows readers and researchers to examine the <b>techniques and methods employed by authors</b>. In detective fiction, these techniques often involve the careful placement of clues, the manipulation of character interactions, and the orchestration of plot twists. Mapping character networks helps reveal how the author distributes attention across protagonists, suspects, and supporting figures, and how the complexity of these connections contributes to suspense and narrative tension.
+        </p>
+
+       
+
+        <p>
+        Dive into the network, explore the connections, answer quiz questions, earn achievements and discover how Agatha Christie creates stories that remain compelling and ingenious nearly a century later.
+        </p>
+<img src="intro.png" alt="Agatha Christie" class="intro-image">
+    </div>
+
+    </div>
+
+     
+</div>
+
+<div id="main-menu" class="screen">
+    <button class="back-btn interactive-btn" onclick="showIntro()">← Introduction</button>
+    <h1>Agatha Christie Archive</h1>
+
+    
+    <div class="menu-wrapper" style="display: flex; align-items: flex-start; justify-content: center; gap: 40px;">
+
+        
+        <div class="menu-note left-note">
+            <p>Select the novel you are interested in to open its character graph.</p>
+        </div>
+
+       
+        <div class="menu-content" style="text-align: center;">
+            <img src="books.png" 
+                 alt="Agatha Christie Portrait"
+                 class="novels-image">
+
+            <div class="menu-grid">
+                <button class="novel-btn" onclick="showGraph('orient')">Murder on the Orient Express</button>
+                <button class="novel-btn" onclick="showGraph('nile')">Death on the Nile</button>
+                <button class="novel-btn" onclick="showGraph('ackroyd')">The Murder of Roger Ackroyd</button>
+                <button class="novel-btn" onclick="showGraph('endhouse')">Peril at End House</button>
+            </div>
+        </div>
+
+       
+        <div class="menu-note right-note">
+            <p>Don't worry if you can't answer the quiz questions — you can always check the summary. <b>Warning! Contains spoilers.</b></p>
+        </div>
+
+    </div>
+</div>
+
+
+<div id="graph-container" class="screen">
+    <div class="menu-buttons">
+        <button class="back-btn interactive-btn" onclick="showMenu()">← MENU</button>
+        <button class="back-btn interactive-btn" onclick="showSummary()">Summary of the novel</button>
+    </div>
+    <div class="legend">
+<h2 style="margin:0; color:#8e0000; font-size: 16px; display: flex; justify-content: space-between; align-items: center;">
+    CONNECTION GRADIENT
+    <button id="legend-toggle" style="
+        background: #8e0000; 
+        color: white; 
+        border: none; 
+        padding: 2px 6px; 
+        cursor: pointer;
+        font-size: 12px;
+        margin-left: 10px;
+        font-family: 'Courier New', monospace;
+    ">–</button>
+</h2>
+
+<div id="legend-content">
+    <p style="font-size: 11px; color: #333; line-height: 1.4;">
+        <b>Edges (Relationships)</b><br>
+        Line thickness indicates interaction strength and frequency.<br>
+        🟠 Lighter color — weaker or occasional interaction<br>
+        🟣 Darker color — stronger or recurring interaction
+    </p>
+
+    <p style="font-size: 11px; color: #333; line-height: 1.4; margin-top: 6px;">
+        <b>Nodes (Characters)</b><br>
+        Node size reflects overall connectivity in the network.<br>
+        Node color indicates narrative centrality (betweenness).<br>
+        🟠 Lighter color — peripheral character with limited narrative mediation<br>
+        🟣 Darker color — structurally central character connecting multiple groups
+    </p>
+
+    <div id="details" style="font-size: 12px; margin-top: 10px; font-weight: bold;">
+        Click a node to explore its connections
+    </div>
+</div>
+</div>
+
+    <div id="quiz-box" style="display:none;">
+    <div id="quiz-question"></div>
+    <div id="quiz-answers"></div>
+</div>
+    <div id="mynetwork"></div>
+</div>
+
+<div id="summary-screen" class="screen">
+
+    <div class="menu-buttons">
+    <button class="back-btn interactive-btn" onclick="backToGraph()">← Back to the graph</button>
+    </div>
+
+    <div style="
+        max-width: 900px;
+        margin: 100px auto;
+        padding: 30px;
+        background: #111;
+        border: 2px solid #8e0000;
+        line-height: 1.6;
+    ">
+
+        <h1 id="summary-title" style="color:#8e0000;"></h1>
+        <div id="summary-text"></div>
+        <img id="summary-image" class="summary-image" style="display:none;">
+
+    </div>
+</div>
+<div id="achievements-screen" class="screen" >
+      <button class="back-btn interactive-btn" onclick="showStart()">← Back</button>
+      <h1>Achievements</h1>
+      <div id="badges-container"></div>
+      <button class="back-btn interactive-btn" onclick="resetAchievements()">Reset achievements</button>
+  </div>
+
+<script type="text/javascript">
+
+const badges = [
+  {
+    id: 'first_steps',
+    name: 'First Steps',
+    description: 'Opened the Introduction screen for the first time',
+    icon: "firststep.png"
+  },
+  {
+    id: 'network_explorer',
+    name: 'Network Explorer',
+    description: 'Opened a character network visualization',
+    icon: "explorer.png"
+  },
+  {
+    id: 'christie_reader',
+    name: 'Christie Reader',
+    description: 'Explored networks of 2 different novels',
+    icon: "reader.png"
+  },
+  {
+    id: 'master_of_networks',
+    name: 'Master of Networks',
+    description: 'Explored all available novel networks',
+    icon: "networks.png"
+  },
+  {
+    id: 'curious_mind',
+    name: 'Curious Mind',
+    description: 'Opened a novel summary',
+    icon: "mind.png"
+  },
+  {
+    id: 'analytical_eye',
+    name: 'Analytical Eye',
+    description: 'Clicked on at least 5 different characters in a network',
+    icon: "eye.png"
+  },
+  {
+    id: 'detective_in_training',
+    name: 'Detective in Training',
+    description: 'Completed a quiz',
+    icon: "training.png"
+  },
+  {
+    id: 'perfect_detective',
+    name: 'Perfect Detective',
+    description: 'Completed a quiz with a full score',
+    icon: "perfect.jpg"
+  },
+  {
+    id: 'data_storyteller',
+    name: 'Data Storyteller',
+    description: 'Switched between network and summary for the same novel',
+    icon: "data.jpg"
+  },
+  {
+    id: 'humanities_advocate',
+    name: 'Humanities Advocate',
+    description: 'Unlocked 7 achievements',
+    icon: "advocate.png"
+  }
+];
+
+let earnedBadges = JSON.parse(localStorage.getItem('earnedBadges')) || [];
+
+function earnBadge(id) {
+    if (!earnedBadges.includes(id)) {
+        earnedBadges.push(id);
+        localStorage.setItem('earnedBadges', JSON.stringify(earnedBadges));
+
+         const badge = badges.find(b => b.id === id);
+        if (badge) showBadgeNotification(badge);
+    }
+}
+
+
+    let currentNovel = null;
+
+    const novelsData = {
+        orient: {
+            nodes: [
+        {id: "Antonio Foscarelli", val: 20.75, gr: 2},
+        {id: "Colonel Arbuthnot", val: 40.19, gr: 1},
+        {id: "Count Andrenyi", val: 23.76, gr: 2},
+        {id: "Countess Andrenyi", val: 27.17, gr: 2},
+        {id: "Cyrus Hardman", val: 12.97, gr: 0},
+        {id: "Daisy Armstrong", val: 8.99, gr: 0},
+        {id: "Dr. Constantine", val: 24.81, gr: 3},
+        {id: "Edward Masterman", val: 10.41, gr: 0},
+        {id: "Greta Ohlsson", val: 20.74, gr: 3},
+        {id: "Hector MacQueen", val: 37.36, gr: 4},
+        {id: "Hercule Poirot", val: 141.76, gr: 7},
+        {id: "Hildegarde Schmidt", val: 25.17, gr: 2},
+        {id: "M. Bouc", val: 47.95, gr: 4},
+        {id: "Mary Debenham", val: 39.94, gr: 3},
+        {id: "Mrs. Hubbard", val: 36.32, gr: 2},
+        {id: "Pierre Michel", val: 35.08, gr: 1},
+        {id: "Princess Dragomiroff", val: 30.62, gr: 2},
+        {id: "Samuel Ratchett", val: 50.55, gr: 3}
+    ],
+            edges: [  {from:"Antonio Foscarelli", to:"Colonel Arbuthnot", w:1.28}, {from:"Antonio Foscarelli", to:"Count Andrenyi", w:1.28},
+            {from:"Antonio Foscarelli", to:"Countess Andrenyi", w:1.13}, {from:"Antonio Foscarelli", to:"Edward Masterman", w:1.43},
+            {from:"Antonio Foscarelli", to:"Greta Ohlsson", w:1.21}, {from:"Antonio Foscarelli", to:"Hector MacQueen", w:1.21},
+            {from:"Antonio Foscarelli", to:"Hercule Poirot", w:5.49}, {from:"Antonio Foscarelli", to:"Hildegarde Schmidt", w:1.28},
+            {from:"Antonio Foscarelli", to:"M. Bouc", w:1.81}, {from:"Antonio Foscarelli", to:"Mrs. Hubbard", w:1.13},
+            {from:"Antonio Foscarelli", to:"Pierre Michel", w:1.06}, {from:"Antonio Foscarelli", to:"Princess Dragomiroff", w:1.28},
+            {from:"Antonio Foscarelli", to:"Samuel Ratchett", w:1.06}, {from:"Colonel Arbuthnot", to:"Count Andrenyi", w:1.21},
+            {from:"Colonel Arbuthnot", to:"Countess Andrenyi", w:1.13}, {from:"Colonel Arbuthnot", to:"Dr. Constantine", w:1.43},
+            {from:"Colonel Arbuthnot", to:"Greta Ohlsson", w:1.13}, {from:"Colonel Arbuthnot", to:"Hector MacQueen", w:4.61},
+            {from:"Colonel Arbuthnot", to:"Hercule Poirot", w:11.57}, {from:"Colonel Arbuthnot", to:"Hildegarde Schmidt", w:1.43},
+            {from:"Colonel Arbuthnot", to:"M. Bouc", w:2.81}, {from:"Colonel Arbuthnot", to:"Mary Debenham", w:5.26},
+            {from:"Colonel Arbuthnot", to:"Mrs. Hubbard", w:1.28}, {from:"Colonel Arbuthnot", to:"Pierre Michel", w:2.48},
+            {from:"Colonel Arbuthnot", to:"Princess Dragomiroff", w:1.51}, {from:"Colonel Arbuthnot", to:"Samuel Ratchett", w:2.96},
+            {from:"Count Andrenyi", to:"Countess Andrenyi", w:4.46}, {from:"Count Andrenyi", to:"Daisy Armstrong", w:1.28},
+            {from:"Count Andrenyi", to:"Dr. Constantine", w:1.06}, {from:"Count Andrenyi", to:"Greta Ohlsson", w:1.21},
+            {from:"Count Andrenyi", to:"Hector MacQueen", w:1.21}, {from:"Count Andrenyi", to:"Hercule Poirot", w:4.88},
+            {from:"Count Andrenyi", to:"Hildegarde Schmidt", w:1.28}, {from:"Count Andrenyi", to:"Mary Debenham", w:1.13},
+            {from:"Count Andrenyi", to:"Mrs. Hubbard", w:1.58}, {from:"Count Andrenyi", to:"Pierre Michel", w:1.13},
+            {from:"Count Andrenyi", to:"Princess Dragomiroff", w:1.96}, {from:"Countess Andrenyi", to:"Daisy Armstrong", w:1.51},
+            {from:"Countess Andrenyi", to:"Dr. Constantine", w:1.21}, {from:"Countess Andrenyi", to:"Hector MacQueen", w:1.06},
+            {from:"Countess Andrenyi", to:"Hercule Poirot", w:7.92}, {from:"Countess Andrenyi", to:"M. Bouc", w:1.06},
+            {from:"Countess Andrenyi", to:"Mary Debenham", w:1.66}, {from:"Countess Andrenyi", to:"Mrs. Hubbard", w:1.58},
+            {from:"Countess Andrenyi", to:"Pierre Michel", w:1.06}, {from:"Countess Andrenyi", to:"Princess Dragomiroff", w:2.18},
+            {from:"Countess Andrenyi", to:"Samuel Ratchett", w:1.13}, {from:"Cyrus Hardman", to:"Dr. Constantine", w:1.21},
+            {from:"Cyrus Hardman", to:"Hercule Poirot", w:6.00}, {from:"Cyrus Hardman", to:"Hildegarde Schmidt", w:1.06},
+            {from:"Cyrus Hardman", to:"M. Bouc", w:1.21}, {from:"Cyrus Hardman", to:"Mrs. Hubbard", w:1.13},
+            {from:"Cyrus Hardman", to:"Samuel Ratchett", w:2.33}, {from:"Daisy Armstrong", to:"Greta Ohlsson", w:1.06},
+            {from:"Daisy Armstrong", to:"Hector MacQueen", w:1.13}, {from:"Daisy Armstrong", to:"Hercule Poirot", w:2.84},
+            {from:"Daisy Armstrong", to:"Mary Debenham", w:1.13}, {from:"Dr. Constantine", to:"Edward Masterman", w:1.06},
+            {from:"Dr. Constantine", to:"Hercule Poirot", w:6.75}, {from:"Dr. Constantine", to:"Hildegarde Schmidt", w:1.13},
+            {from:"Dr. Constantine", to:"M. Bouc", w:3.93}, {from:"Dr. Constantine", to:"Mary Debenham", w:1.21},
+            {from:"Dr. Constantine", to:"Mrs. Hubbard", w:1.58}, {from:"Dr. Constantine", to:"Pierre Michel", w:1.28},
+            {from:"Dr. Constantine", to:"Princess Dragomiroff", w:1.28}, {from:"Dr. Constantine", to:"Samuel Ratchett", w:1.58},
+            {from:"Edward Masterman", to:"Greta Ohlsson", w:1.06}, {from:"Edward Masterman", to:"Hector MacQueen", w:1.36},
+            {from:"Edward Masterman", to:"Hercule Poirot", w:4.34}, {from:"Edward Masterman", to:"M. Bouc", w:1.13},
+            {from:"Greta Ohlsson", to:"Hector MacQueen", w:1.13}, {from:"Greta Ohlsson", to:"Hercule Poirot", w:4.10},
+            {from:"Greta Ohlsson", to:"Hildegarde Schmidt", w:1.28}, {from:"Greta Ohlsson", to:"M. Bouc", w:1.36},
+            {from:"Greta Ohlsson", to:"Mary Debenham", w:1.28}, {from:"Greta Ohlsson", to:"Mrs. Hubbard", w:1.21},
+            {from:"Greta Ohlsson", to:"Pierre Michel", w:1.28}, {from:"Greta Ohlsson", to:"Princess Dragomiroff", w:1.13},
+            {from:"Greta Ohlsson", to:"Samuel Ratchett", w:2.21}, {from:"Hector MacQueen", to:"Hercule Poirot", w:11.71},
+            {from:"Hector MacQueen", to:"Hildegarde Schmidt", w:1.13}, {from:"Hector MacQueen", to:"M. Bouc", w:2.13},
+            {from:"Hector MacQueen", to:"Mary Debenham", w:1.21}, {from:"Hector MacQueen", to:"Mrs. Hubbard", w:1.36},
+            {from:"Hector MacQueen", to:"Pierre Michel", w:2.27}, {from:"Hector MacQueen", to:"Princess Dragomiroff", w:1.06},
+            {from:"Hector MacQueen", to:"Samuel Ratchett", w:4.68}, {from:"Hercule Poirot", to:"Hildegarde Schmidt", w:6.05},
+            {from:"Hercule Poirot", to:"M. Bouc", w:15.62}, {from:"Hercule Poirot", to:"Mary Debenham", w:15.19},
+            {from:"Hercule Poirot", to:"Mrs. Hubbard", w:10.24}, {from:"Hercule Poirot", to:"Pierre Michel", w:7.98},
+            {from:"Hercule Poirot", to:"Princess Dragomiroff", w:6.03}, {from:"Hercule Poirot", to:"Samuel Ratchett", w:14.96},
+            {from:"Hildegarde Schmidt", to:"M. Bouc", w:1.06}, {from:"Hildegarde Schmidt", to:"Mary Debenham", w:3.16},
+            {from:"Hildegarde Schmidt", to:"Mrs. Hubbard", w:1.43}, {from:"Hildegarde Schmidt", to:"Pierre Michel", w:1.43},
+            {from:"Hildegarde Schmidt", to:"Princess Dragomiroff", w:2.28}, {from:"Hildegarde Schmidt", to:"Samuel Ratchett", w:1.06},
+            {from:"M. Bouc", to:"Mary Debenham", w:1.36}, {from:"M. Bouc", to:"Mrs. Hubbard", w:2.88},
+            {from:"M. Bouc", to:"Pierre Michel", w:3.60}, {from:"M. Bouc", to:"Princess Dragomiroff", w:3.29},
+            {from:"M. Bouc", to:"Samuel Ratchett", w:4.62}, {from:"Mary Debenham", to:"Mrs. Hubbard", w:1.51},
+            {from:"Mary Debenham", to:"Pierre Michel", w:1.73}, {from:"Mary Debenham", to:"Princess Dragomiroff", w:1.06},
+            {from:"Mary Debenham", to:"Samuel Ratchett", w:2.96}, {from:"Mrs. Hubbard", to:"Pierre Michel", w:2.03},
+            {from:"Mrs. Hubbard", to:"Princess Dragomiroff", w:1.73}, {from:"Mrs. Hubbard", to:"Samuel Ratchett", w:5.54},
+            {from:"Pierre Michel", to:"Princess Dragomiroff", w:4.01}, {from:"Pierre Michel", to:"Samuel Ratchett", w:3.65},
+            {from:"Princess Dragomiroff", to:"Samuel Ratchett", w:1.73} ]
+        },
+
+       nile: {
+    nodes: [
+        {id: "Andrew Pennington", val: 34.65, gr: 1},
+        {id: "Carl Bessner", val: 23.04, gr: 1},
+        {id: "Colonel Race", val: 36.99, gr: 1},
+        {id: "Cornelia Robson", val: 42.60, gr: 2},
+        {id: "Guido Richetti", val: 14.61, gr: 0},
+        {id: "Hercule Poirot", val: 95.60, gr: 7},
+        {id: "Jacqueline de Bellefort", val: 51.69, gr: 2},
+        {id: "James Fanthorp", val: 25.31, gr: 1},
+        {id: "Linnet Doyle", val: 73.74, gr: 3},
+        {id: "Lord Windlesham", val: 12.18, gr: 0},
+        {id: "Louise Bourget", val: 19.89, gr: 1},
+        {id: "Marie Van Schuyler", val: 21.54, gr: 1},
+        {id: "Miss Bowers", val: 20.93, gr: 1},
+        {id: "Rosalie Otterbourne", val: 29.38, gr: 1},
+        {id: "Salome Otterbourne", val: 18.99, gr: 1},
+        {id: "Simon Doyle", val: 48.69, gr: 2},
+        {id: "Tim Allerton", val: 36.87, gr: 1},
+        {id: "William Ferguson", val: 22.23, gr: 1}
+    ],
+    edges: [
+        {from:"Andrew Pennington", to:"Carl Bessner", w:1.09},
+        {from:"Andrew Pennington", to:"Colonel Race", w:2.03},
+        {from:"Andrew Pennington", to:"Cornelia Robson", w:4.04},
+        {from:"Andrew Pennington", to:"Guido Richetti", w:1.03},
+        {from:"Andrew Pennington", to:"Hercule Poirot", w:5.26},
+        {from:"Andrew Pennington", to:"Jacqueline de Bellefort", w:1.76},
+        {from:"Andrew Pennington", to:"James Fanthorp", w:2.39},
+        {from:"Andrew Pennington", to:"Linnet Doyle", w:5.34},
+        {from:"Andrew Pennington", to:"Louise Bourget", w:1.19},
+        {from:"Andrew Pennington", to:"Miss Bowers", w:1.03},
+        {from:"Andrew Pennington", to:"Rosalie Otterbourne", w:1.23},
+        {from:"Andrew Pennington", to:"Salome Otterbourne", w:1.46},
+        {from:"Andrew Pennington", to:"Simon Doyle", w:2.89},
+        {from:"Andrew Pennington", to:"Tim Allerton", w:2.71},
+        {from:"Andrew Pennington", to:"William Ferguson", w:1.20},
+
+        {from:"Carl Bessner", to:"Colonel Race", w:1.86},
+        {from:"Carl Bessner", to:"Cornelia Robson", w:2.33},
+        {from:"Carl Bessner", to:"Guido Richetti", w:1.17},
+        {from:"Carl Bessner", to:"Hercule Poirot", w:4.10},
+        {from:"Carl Bessner", to:"Jacqueline de Bellefort", w:1.46},
+        {from:"Carl Bessner", to:"James Fanthorp", w:1.46},
+        {from:"Carl Bessner", to:"Linnet Doyle", w:3.36},
+        {from:"Carl Bessner", to:"Louise Bourget", w:1.13},
+        {from:"Carl Bessner", to:"Marie Van Schuyler", w:1.03},
+        {from:"Carl Bessner", to:"Miss Bowers", w:1.23},
+        {from:"Carl Bessner", to:"Simon Doyle", w:1.39},
+        {from:"Carl Bessner", to:"William Ferguson", w:1.43},
+
+        {from:"Colonel Race", to:"Cornelia Robson", w:1.56},
+        {from:"Colonel Race", to:"Guido Richetti", w:1.29},
+        {from:"Colonel Race", to:"Hercule Poirot", w:6.22},
+        {from:"Colonel Race", to:"Jacqueline de Bellefort", w:2.29},
+        {from:"Colonel Race", to:"James Fanthorp", w:2.13},
+        {from:"Colonel Race", to:"Linnet Doyle", w:4.50},
+        {from:"Colonel Race", to:"Louise Bourget", w:2.63},
+        {from:"Colonel Race", to:"Marie Van Schuyler", w:1.36},
+        {from:"Colonel Race", to:"Miss Bowers", w:1.36},
+        {from:"Colonel Race", to:"Rosalie Otterbourne", w:2.16},
+        {from:"Colonel Race", to:"Salome Otterbourne", w:1.19},
+        {from:"Colonel Race", to:"Simon Doyle", w:2.23},
+        {from:"Colonel Race", to:"Tim Allerton", w:3.11},
+        {from:"Colonel Race", to:"William Ferguson", w:1.09},
+
+        {from:"Cornelia Robson", to:"Guido Richetti", w:1.09},
+        {from:"Cornelia Robson", to:"Hercule Poirot", w:8.72},
+        {from:"Cornelia Robson", to:"Jacqueline de Bellefort", w:2.69},
+        {from:"Cornelia Robson", to:"James Fanthorp", w:1.86},
+        {from:"Cornelia Robson", to:"Linnet Doyle", w:3.40},
+        {from:"Cornelia Robson", to:"Louise Bourget", w:1.13},
+        {from:"Cornelia Robson", to:"Marie Van Schuyler", w:2.76},
+        {from:"Cornelia Robson", to:"Miss Bowers", w:1.46},
+        {from:"Cornelia Robson", to:"Rosalie Otterbourne", w:1.23},
+        {from:"Cornelia Robson", to:"Salome Otterbourne", w:1.09},
+        {from:"Cornelia Robson", to:"Simon Doyle", w:3.39},
+        {from:"Cornelia Robson", to:"Tim Allerton", w:2.68},
+        {from:"Cornelia Robson", to:"William Ferguson", w:3.23},
+
+        {from:"Guido Richetti", to:"Hercule Poirot", w:3.23},
+        {from:"Guido Richetti", to:"Jacqueline de Bellefort", w:3.01},
+        {from:"Guido Richetti", to:"Linnet Doyle", w:1.16},
+        {from:"Guido Richetti", to:"Miss Bowers", w:1.33},
+        {from:"Guido Richetti", to:"Salome Otterbourne", w:1.36},
+        {from:"Guido Richetti", to:"Simon Doyle", w:1.03},
+        {from:"Guido Richetti", to:"William Ferguson", w:1.13},
+
+        {from:"Hercule Poirot", to:"Jacqueline de Bellefort", w:13.07},
+        {from:"Hercule Poirot", to:"James Fanthorp", w:2.87},
+        {from:"Hercule Poirot", to:"Linnet Doyle", w:16.76},
+        {from:"Hercule Poirot", to:"Lord Windlesham", w:1.40},
+        {from:"Hercule Poirot", to:"Louise Bourget", w:2.06},
+        {from:"Hercule Poirot", to:"Marie Van Schuyler", w:3.12},
+        {from:"Hercule Poirot", to:"Miss Bowers", w:2.00},
+        {from:"Hercule Poirot", to:"Rosalie Otterbourne", w:7.01},
+        {from:"Hercule Poirot", to:"Salome Otterbourne", w:3.53},
+        {from:"Hercule Poirot", to:"Simon Doyle", w:8.74},
+        {from:"Hercule Poirot", to:"Tim Allerton", w:5.76},
+        {from:"Hercule Poirot", to:"William Ferguson", w:1.96}
+    ]
+        },
+
+        ackroyd: {
+    nodes: [
+        {id: "Annie", val: 5.41, gr: 0},
+        {id: "Caroline", val: 27.03, gr: 1},
+        {id: "Elizabeth Russell", val: 11.43, gr: 1},
+        {id: "Flora Ackroyd", val: 24.75, gr: 1},
+        {id: "Geoffrey Raymond", val: 17.16, gr: 1},
+        {id: "Hector Blunt", val: 17.08, gr: 0},
+        {id: "James Sheppard", val: 20.46, gr: 1},
+        {id: "John Parker", val: 24.18, gr: 1},
+        {id: "Poirot", val: 35.01, gr: 7},
+        {id: "Ralph Paton", val: 27.77, gr: 1},
+        {id: "Roger Ackroyd", val: 23.61, gr: 1},
+        {id: "Ursula Bourne", val: 15.62, gr: 1}
+    ],
+    edges: [
+        {from:"Annie", to:"Caroline", w:2.30},
+        {from:"Annie", to:"James Sheppard", w:1.09},
+        {from:"Annie", to:"Poirot", w:1.02},
+        {from:"Annie", to:"Ursula Bourne", w:1.00},
+
+        {from:"Caroline", to:"Elizabeth Russell", w:1.08},
+        {from:"Caroline", to:"Flora Ackroyd", w:2.32},
+        {from:"Caroline", to:"Geoffrey Raymond", w:1.30},
+        {from:"Caroline", to:"Hector Blunt", w:1.50},
+        {from:"Caroline", to:"James Sheppard", w:5.32},
+        {from:"Caroline", to:"John Parker", w:1.61},
+        {from:"Caroline", to:"Poirot", w:4.39},
+        {from:"Caroline", to:"Ralph Paton", w:3.09},
+        {from:"Caroline", to:"Roger Ackroyd", w:2.16},
+        {from:"Caroline", to:"Ursula Bourne", w:1.97},
+
+        {from:"Elizabeth Russell", to:"Flora Ackroyd", w:1.19},
+        {from:"Elizabeth Russell", to:"Geoffrey Raymond", w:1.09},
+        {from:"Elizabeth Russell", to:"John Parker", w:1.24},
+        {from:"Elizabeth Russell", to:"Poirot", w:2.44},
+        {from:"Elizabeth Russell", to:"Ralph Paton", w:1.09},
+        {from:"Elizabeth Russell", to:"Roger Ackroyd", w:2.03},
+        {from:"Elizabeth Russell", to:"Ursula Bourne", w:1.27},
+
+        {from:"Flora Ackroyd", to:"Geoffrey Raymond", w:1.39},
+        {from:"Flora Ackroyd", to:"Hector Blunt", w:2.83},
+        {from:"Flora Ackroyd", to:"James Sheppard", w:1.63},
+        {from:"Flora Ackroyd", to:"John Parker", w:3.86},
+        {from:"Flora Ackroyd", to:"Poirot", w:3.97},
+        {from:"Flora Ackroyd", to:"Ralph Paton", w:3.70},
+        {from:"Flora Ackroyd", to:"Roger Ackroyd", w:2.61},
+        {from:"Flora Ackroyd", to:"Ursula Bourne", w:1.24},
+
+        {from:"Geoffrey Raymond", to:"Hector Blunt", w:1.58},
+        {from:"Geoffrey Raymond", to:"James Sheppard", w:1.05},
+        {from:"Geoffrey Raymond", to:"John Parker", w:2.96},
+        {from:"Geoffrey Raymond", to:"Poirot", w:1.96},
+        {from:"Geoffrey Raymond", to:"Ralph Paton", w:2.41},
+        {from:"Geoffrey Raymond", to:"Roger Ackroyd", w:2.36},
+        {from:"Geoffrey Raymond", to:"Ursula Bourne", w:1.05},
+
+        {from:"Hector Blunt", to:"James Sheppard", w:1.17},
+        {from:"Hector Blunt", to:"John Parker", w:2.87},
+        {from:"Hector Blunt", to:"Poirot", w:2.07},
+        {from:"Hector Blunt", to:"Ralph Paton", w:2.50},
+        {from:"Hector Blunt", to:"Roger Ackroyd", w:2.55},
+
+        {from:"James Sheppard", to:"John Parker", w:1.36},
+        {from:"James Sheppard", to:"Poirot", w:4.24},
+        {from:"James Sheppard", to:"Ralph Paton", w:1.57},
+        {from:"James Sheppard", to:"Roger Ackroyd", w:1.73},
+        {from:"James Sheppard", to:"Ursula Bourne", w:1.30},
+
+        {from:"John Parker", to:"Poirot", w:3.89},
+        {from:"John Parker", to:"Ralph Paton", w:2.65},
+        {from:"John Parker", to:"Roger Ackroyd", w:2.68},
+        {from:"John Parker", to:"Ursula Bourne", w:1.06},
+
+        {from:"Poirot", to:"Ralph Paton", w:5.36},
+        {from:"Poirot", to:"Roger Ackroyd", w:3.02},
+        {from:"Poirot", to:"Ursula Bourne", w:2.66},
+
+        {from:"Ralph Paton", to:"Roger Ackroyd", w:2.90},
+        {from:"Ralph Paton", to:"Ursula Bourne", w:2.50},
+
+        {from:"Roger Ackroyd", to:"Ursula Bourne", w:1.57}
+    ]
+},
+
+        endhouse: {
+     nodes: [
+        {id: "Captain Hastings", val: 25.77, gr: 2},
+        {id: "Charles Vyse", val: 16.17, gr: 5},
+        {id: "Commander Challenger", val: 16.74, gr: 2},
+        {id: "Commander Croft", val: 12.26, gr: 0},
+        {id: "Frederica Rice", val: 26.05, gr: 7},
+        {id: "Hercule Poirot", val: 56.71, gr: 7},
+        {id: "Inspector Japp", val: 13.04, gr: 0},
+        {id: "Jim Lazarus", val: 18.17, gr: 2},
+        {id: "Magdala Buckley", val: 43.52, gr: 7},
+        {id: "Maggie Buckley", val: 14.79, gr: 0},
+        {id: "Michael Seton", val: 11.83, gr: 0},
+        {id: "Philip Buckley", val: 4.35, gr: 0}
+    ]
+,
+    edges: [
+        {from:"Captain Hastings", to:"Charles Vyse", w:1.90},
+        {from:"Captain Hastings", to:"Commander Challenger", w:1.41},
+        {from:"Captain Hastings", to:"Commander Croft", w:1.22},
+        {from:"Captain Hastings", to:"Frederica Rice", w:1.57},
+        {from:"Captain Hastings", to:"Hercule Poirot", w:9.51},
+        {from:"Captain Hastings", to:"Inspector Japp", w:1.71},
+        {from:"Captain Hastings", to:"Jim Lazarus", w:1.60},
+        {from:"Captain Hastings", to:"Magdala Buckley", w:4.17},
+        {from:"Captain Hastings", to:"Maggie Buckley", w:1.49},
+        {from:"Captain Hastings", to:"Michael Seton", w:1.19},
+
+        {from:"Charles Vyse", to:"Commander Challenger", w:1.02},
+        {from:"Charles Vyse", to:"Commander Croft", w:1.22},
+        {from:"Charles Vyse", to:"Frederica Rice", w:1.32},
+        {from:"Charles Vyse", to:"Hercule Poirot", w:3.87},
+        {from:"Charles Vyse", to:"Inspector Japp", w:1.05},
+        {from:"Charles Vyse", to:"Jim Lazarus", w:1.32},
+        {from:"Charles Vyse", to:"Magdala Buckley", w:2.33},
+        {from:"Charles Vyse", to:"Maggie Buckley", w:1.02},
+        {from:"Charles Vyse", to:"Philip Buckley", w:1.11},
+
+        {from:"Commander Challenger", to:"Commander Croft", w:1.16},
+        {from:"Commander Challenger", to:"Frederica Rice", w:2.09},
+        {from:"Commander Challenger", to:"Hercule Poirot", w:4.38},
+        {from:"Commander Challenger", to:"Inspector Japp", w:1.02},
+        {from:"Commander Challenger", to:"Jim Lazarus", w:1.27},
+        {from:"Commander Challenger", to:"Magdala Buckley", w:2.22},
+        {from:"Commander Challenger", to:"Maggie Buckley", w:1.05},
+        {from:"Commander Challenger", to:"Michael Seton", w:1.11},
+
+        {from:"Commander Croft", to:"Frederica Rice", w:1.16},
+        {from:"Commander Croft", to:"Hercule Poirot", w:3.93},
+        {from:"Commander Croft", to:"Jim Lazarus", w:1.11},
+        {from:"Commander Croft", to:"Magdala Buckley", w:2.47},
+
+        {from:"Frederica Rice", to:"Hercule Poirot", w:8.12},
+        {from:"Frederica Rice", to:"Inspector Japp", w:1.05},
+        {from:"Frederica Rice", to:"Jim Lazarus", w:2.28},
+        {from:"Frederica Rice", to:"Magdala Buckley", w:4.35},
+        {from:"Frederica Rice", to:"Maggie Buckley", w:1.43},
+        {from:"Frederica Rice", to:"Michael Seton", w:1.65},
+        {from:"Frederica Rice", to:"Philip Buckley", w:1.02},
+
+        {from:"Hercule Poirot", to:"Inspector Japp", w:2.77},
+        {from:"Hercule Poirot", to:"Jim Lazarus", w:2.92},
+        {from:"Hercule Poirot", to:"Magdala Buckley", w:15.20},
+        {from:"Hercule Poirot", to:"Maggie Buckley", w:2.95},
+        {from:"Hercule Poirot", to:"Michael Seton", w:2.04},
+        {from:"Hercule Poirot", to:"Philip Buckley", w:1.02},
+
+        {from:"Inspector Japp", to:"Jim Lazarus", w:1.08},
+        {from:"Inspector Japp", to:"Magdala Buckley", w:1.73},
+        {from:"Inspector Japp", to:"Maggie Buckley", w:1.52},
+        {from:"Inspector Japp", to:"Michael Seton", w:1.11},
+
+        {from:"Jim Lazarus", to:"Magdala Buckley", w:4.26},
+        {from:"Jim Lazarus", to:"Maggie Buckley", w:1.05},
+        {from:"Jim Lazarus", to:"Michael Seton", w:1.27},
+
+        {from:"Magdala Buckley", to:"Maggie Buckley", w:3.21},
+        {from:"Magdala Buckley", to:"Michael Seton", w:2.39},
+        {from:"Magdala Buckley", to:"Philip Buckley", w:1.19},
+
+        {from:"Maggie Buckley", to:"Michael Seton", w:1.08}
+    ]
+}
+
+    };
+    const quizData = {
+    ackroyd: [
+        {
+            question: "Why does the social network in *The Murder of Roger Ackroyd* appear visually uniform, with little variation in edge color?",
+        answers: [
+            { text: "Because characters interact with equal frequency", correct: false },
+            { text: "Because the narrative deliberately smooths differences between interactions", correct: true },
+            { text: "Because the novel contains very few dialogues", correct: false }
+        ]
+    },
+    {
+        question: "What role does the narrator play in shaping the structure of the social network?",
+        answers: [
+            { text: "A neutral observer who records events objectively", correct: false },
+            { text: "An internal filter who controls how relationships are revealed", correct: true },
+            { text: "A minor character with limited narrative influence", correct: false }
+        ]
+    },
+    {
+        question: "What does the absence of strongly highlighted connections suggest about the flow of information in the novel?",
+        answers: [
+            { text: "Information circulates evenly and without hierarchy", correct: false },
+            { text: "Key interactions are intentionally masked within ordinary exchanges", correct: true },
+            { text: "The plot relies mainly on physical action rather than dialogue", correct: false }
+        ]
+    },
+    {
+        question: "How does the narrator’s position affect the visibility of other characters’ relationships?",
+        answers: [
+            { text: "It amplifies secondary characters over central ones", correct: false },
+            { text: "It limits the graph to what the narrator chooses to disclose", correct: true },
+            { text: "It removes the narrator from the network entirely", correct: false }
+        ]
+    },
+    {
+        question: "Which narrative strategy is best reflected by this network structure?",
+        answers: [
+            { text: "An omniscient perspective distributing information freely", correct: false },
+            { text: "A controlled first-person narration that conceals crucial links", correct: true },
+            { text: "A fragmented, multi-voiced narrative", correct: false }
+        ]
+    }
+            ],
+        nile: [
+    {
+        question: "Why does Poirot remain the most central node even though he is not emotionally involved in the core conflict?",
+        answers: [
+            { text: "Because he appears in every chapter", correct: false },
+            { text: "Because narrative attention constantly routes information through him", correct: true },
+            { text: "Because he speaks more than other characters", correct: false }
+        ]
+    },
+    {
+        question: "What does the dense web of connections around secondary characters suggest about the structure of suspicion?",
+        answers: [
+            { text: "They are narratively insignificant", correct: false },
+            { text: "Suspicion is deliberately distributed across many figures", correct: true },
+            { text: "They interact randomly without narrative purpose", correct: false }
+        ]
+    },
+    {
+        question: "Why do some characters appear visually peripheral despite being crucial to the plot?",
+        answers: [
+            { text: "They enter the story too late", correct: false },
+            { text: "Their importance is concealed through limited social visibility", correct: true },
+            { text: "They lack dialogue scenes", correct: false }
+        ]
+    },
+    {
+        question: "What role does spatial proximity (shared locations on the boat and shore) play in shaping this network?",
+        answers: [
+            { text: "It creates accidental connections with no narrative meaning", correct: false },
+            { text: "It amplifies background interactions that fuel misdirection", correct: true },
+            { text: "It replaces dialogue as the main driver of the plot", correct: false }
+        ]
+    },
+    {
+        question: "How does this network reflect the detective genre’s strategy of false centrality?",
+        answers: [
+            { text: "By making the murderer the most connected character", correct: false },
+            { text: "By visually emphasizing characters who attract attention but deflect truth", correct: true },
+            { text: "By hiding all meaningful relationships", correct: false }
+        ]
+    }
+],
+orient: [
+    {
+        question: "Why does Poirot appear as the most central node while not being the true source of the crime?",
+        answers: [
+            { text: "Because he dominates all social interactions", correct: false },
+            { text: "Because he functions as an interpretive hub rather than an actor", correct: true },
+            { text: "Because he has the strongest personal motive", correct: false }
+        ]
+    },
+    {
+        question: "What does the unusually even distribution of connections among passengers suggest?",
+        answers: [
+            { text: "Random social mixing on the train", correct: false },
+            { text: "A deliberately constructed collective structure", correct: true },
+            { text: "Lack of narrative hierarchy", correct: false }
+        ]
+    },
+    {
+        question: "Why are many characters densely connected to each other despite minimal individual screen time?",
+        answers: [
+            { text: "They participate in shared off-stage interactions", correct: false },
+            { text: "Their narrative significance emerges only as a group", correct: true },
+            { text: "They speak more often than Poirot", correct: false }
+        ]
+    },
+    {
+        question: "How does the absence of a single dominant suspect manifest in the network visualization?",
+        answers: [
+            { text: "Through the lack of a clearly isolated cluster", correct: true },
+            { text: "Through the disappearance of weak ties", correct: false },
+            { text: "Through reduced edge density overall", correct: false }
+        ]
+    },
+    {
+        question: "What genre-specific strategy does this network reveal?",
+        answers: [
+            { text: "Shifting guilt from individuals to a shared moral structure", correct: true },
+            { text: "Concealing the murderer through narrative silence", correct: false },
+            { text: "Reducing dialogue to avoid clues", correct: false }
+        ]
+    }],
+    nile: [
+    {
+        question: "Why does Poirot remain the most central node even though he is not emotionally involved in the core conflict?",
+        answers: [
+            { text: "Because he appears in every chapter", correct: false },
+            { text: "Because narrative attention constantly routes information through him", correct: true },
+            { text: "Because he speaks more than other characters", correct: false }
+        ]
+    },
+    {
+        question: "What does the dense web of connections around secondary characters suggest about the structure of suspicion?",
+        answers: [
+            { text: "They are narratively insignificant", correct: false },
+            { text: "Suspicion is deliberately distributed across many figures", correct: true },
+            { text: "They interact randomly without narrative purpose", correct: false }
+        ]
+    },
+    {
+        question: "Why do some characters appear visually peripheral despite being crucial to the plot?",
+        answers: [
+            { text: "They enter the story too late", correct: false },
+            { text: "Their importance is concealed through limited social visibility", correct: true },
+            { text: "They lack dialogue scenes", correct: false }
+        ]
+    },
+    {
+        question: "What role does spatial proximity (shared locations on the boat and shore) play in shaping this network?",
+        answers: [
+            { text: "It creates accidental connections with no narrative meaning", correct: false },
+            { text: "It amplifies background interactions that fuel misdirection", correct: true },
+            { text: "It replaces dialogue as the main driver of the plot", correct: false }
+        ]
+    },
+    {
+        question: "How does this network reflect the detective genre’s strategy of false centrality?",
+        answers: [
+            { text: "By making the murderer the most connected character", correct: false },
+            { text: "By visually emphasizing characters who attract attention but deflect truth", correct: true },
+            { text: "By hiding all meaningful relationships", correct: false }
+        ]
+        }
+    
+],
+endhouse: [
+    {
+        question: "Why does Nick Buckley appear as a highly central node despite being positioned as a victim?",
+        answers: [
+            { text: "Because she is socially dominant in the group", correct: false },
+            { text: "Because narrative attention is deliberately concentrated on her", correct: true },
+            { text: "Because she controls most character interactions", correct: false }
+        ]
+    },
+    {
+        question: "What does the strong visual link between Buckley and Poirot primarily represent?",
+        answers: [
+            { text: "Mutual trust and cooperation", correct: false },
+            { text: "Poirot’s investigative focus being strategically misdirected", correct: true },
+            { text: "A shared motive for the crime", correct: false }
+        ]
+    },
+    {
+    question: "How does Buckley’s dominance in the network shape the reader’s attention?",
+    answers: [
+        { text: "It shifts focus away from less prominent relational patterns", correct: true },
+        { text: "It highlights the emotional motivations of minor characters", correct: false },
+        { text: "It reveals hidden alliances between secondary figures", correct: false }
+    ]
+}
+,
+    {
+        question: "What structural illusion does this network create for the reader?",
+        answers: [
+            { text: "That the crime originates outside the main social circle", correct: false },
+            { text: "That the most visible node is the least likely source of threat", correct: true },
+            { text: "That the detective is narratively unreliable", correct: false }
+        ]
+    },
+    {
+        question: "What classic Agatha Christie technique is most clearly revealed by this graph?",
+        answers: [
+            { text: "Hiding the culprit through lack of information", correct: false },
+            { text: "Using apparent vulnerability as narrative camouflage", correct: true },
+            { text: "Shifting blame through excessive suspects", correct: false }
+        ]
+    }
+]
+}
+const summaries = {
+    orient: {
+        title: "Murder on the Orient Express (1934)",
+        text: `
+            <p>
+During a journey aboard the luxurious Orient Express, the famous Belgian detective
+Hercule Poirot is unexpectedly forced to interrupt his travel plans when the train
+is stopped by heavy snow in the Balkans. During the night, an American passenger,
+Samuel Ratchett, is found murdered in his compartment.
+</p>
+
+<p>
+The victim has been stabbed multiple times, yet the wounds are inconsistent: some are
+deep and forceful, others weak and hesitant. The compartment door was locked from the
+inside, and a number of confusing clues are discovered — a broken watch stopped at
+1:15 a.m., a pipe cleaner, a lady’s handkerchief, and a fragment of a burnt letter.
+</p>
+
+<p>
+Poirot soon realizes that Ratchett was not his real identity. He was in fact Cassetti,
+a criminal responsible for the kidnapping and murder of little Daisy Armstrong years
+earlier in the United States. That crime led to the destruction of the Armstrong
+family: Daisy was killed, her pregnant mother died of grief, her father committed
+suicide, and several servants were wrongly accused.
+</p>
+
+<p>
+As Poirot interviews the twelve passengers in the carriage, it becomes clear that
+each of them is somehow connected to the Armstrong tragedy — as a family member,
+friend, or loyal servant. Their testimonies appear inconsistent, yet they all share
+an emotional connection to the long-past crime.
+</p>
+
+<p>
+In a shocking conclusion, Poirot reveals that Ratchett was not killed by a single
+murderer, but by all twelve passengers, each of whom stabbed him once. Together they
+formed a jury, delivering their own version of justice for a man who escaped legal
+punishment.
+</p>
+
+<p>
+Poirot presents two possible solutions to the authorities. The official one claims
+that an unknown assassin entered the train and escaped into the snow. The authorities
+accept this version, allowing the passengers to go free.
+</p>
+
+        `,
+        image:"train.png"
+    },
+    nile: {
+        title: "Death on the Nile (1937)",
+        text: `
+            <p>
+While vacationing in Egypt, Hercule Poirot encounters newlyweds Linnet Ridgeway and
+Simon Doyle aboard a Nile river steamer. Linnet is young, beautiful, and extremely
+wealthy — a fact that immediately creates tension among the passengers, particularly
+with Jacqueline de Bellefort, Linnet’s former friend and Simon’s former fiancée.
+</p>
+
+<p>
+Jacqueline openly expresses her hatred toward the couple and appears obsessed with
+revenge. During a heated confrontation, she shoots Simon in the leg. That same night,
+however, Linnet is found murdered in her cabin, shot through the head.
+</p>
+
+<p>
+At first, Jacqueline appears to be the obvious suspect, but she has a solid alibi:
+she spent the entire night under supervision after shooting Simon. Poirot begins to
+suspect that the crime is far more complex than it seems.
+</p>
+
+<p>
+As the investigation unfolds, additional crimes occur — a maid is killed, and a
+witness is murdered — all seemingly designed to conceal the truth. Poirot carefully
+reconstructs the timeline and exposes a carefully staged deception.
+</p>
+
+<p>
+In the final revelation, Poirot explains that Simon and Jacqueline never truly broke
+up. They planned the murder together. Simon faked his injury, and Jacqueline used the
+opportunity to kill Linnet, later secretly passing the gun back to Simon, who staged
+the crime scene.
+</p>
+
+<p>
+Cornered and exposed, Simon shoots Jacqueline and then himself, ending the tragic
+chain of events driven by greed, jealousy, and obsession.
+</p>
+
+        `,
+    image:"boat.png"
+    },
+    ackroyd: {
+        title: "The Murder of Roger Ackroyd (1926)",
+        text: `
+            <p>
+The novel is set in the quiet English village of King’s Abbot, where the wealthy
+widow Mrs. Ferrars dies under suspicious circumstances. Shortly before her death,
+she confesses to her friend Roger Ackroyd that she poisoned her abusive husband and
+has been blackmailed ever since.
+</p>
+
+<p>
+That very evening, Roger Ackroyd is murdered in his study, stabbed with a dagger.
+Hercule Poirot, now retired and living in the village, takes up the investigation.
+The story is narrated by Dr. James Sheppard, the local physician and Poirot’s
+assistant.
+</p>
+
+<p>
+Poirot uncovers numerous secrets among the household and village residents, including
+hidden identities, financial motives, and suspicious behavior. However, none of the
+suspects seem to fully explain the crime.
+</p>
+
+<p>
+In one of the most famous twists in detective fiction, Poirot reveals that the true
+murderer is Dr. Sheppard himself — the narrator of the story. Sheppard was the
+blackmailer of Mrs. Ferrars and killed Ackroyd to prevent his exposure.
+</p>
+
+<p>
+Sheppard manipulated the narrative by omitting key details and misleading the reader,
+while maintaining the appearance of a helpful assistant. Poirot gives him the choice
+between public exposure or suicide.
+</p>
+
+<p>
+The novel ends with Dr. Sheppard preparing to take his own life, completing one of the
+most radical narrative experiments in the history of the genre.
+</p>
+
+        `,
+        image:"narrator.png"
+    },
+    endhouse: {
+        title: "Peril at End House (1932)",
+        text: `
+            <p>
+While staying on the Cornish coast, Hercule Poirot meets the young woman Nick Buckley,
+who lives at End House. Poirot notices that Nick seems to be the target of a series of
+“accidents” — a falling rock, a sabotaged staircase, and a nearly fatal gunshot.
+</p>
+
+<p>
+Poirot becomes convinced that someone is attempting to murder her and decides to
+protect her. Shortly thereafter, Nick’s friend Maggie Buckley is found dead, shot
+while wearing Nick’s distinctive shawl.
+</p>
+
+<p>
+The case appears to be solved when suspicion falls on Michael Seton, a man romantically
+connected to Nick, who conveniently dies in a plane crash before he can be questioned.
+</p>
+
+<p>
+However, Poirot reveals that the truth is far darker. Nick herself was the intended
+victim from the beginning — but not of murder. She was orchestrating the events.
+Nick was deeply in debt and stood to inherit a large fortune if she were believed to
+be in mortal danger.
+</p>
+
+<p>
+Nick staged the attempts on her own life and murdered Maggie to create a convincing
+illusion of threat. Poirot exposes her deception, and Nick is arrested for murder.
+</p>
+
+<p>
+The novel explores themes of manipulation, performance, and the dangerous power of
+appearances.
+</p>
+
+        `,
+        image: "mansion.png"
+    }
+};
+
+
+
+    function showGraph(novel) {
+        currentNovel = novel;
+        earnBadge('network_explorer');
+        document.getElementById('main-menu').style.display = 'none';
+        document.getElementById('graph-container').style.display = 'block';
+        initNetwork();
+        startQuiz(novel);
+
+    }
+
+    function showMenu() {
+    document.getElementById('graph-container').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'flex';
+}
+
+
+    function showStart() {
+    document.getElementById('start-screen').style.display = 'flex';
+    document.getElementById('intro-screen').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('graph-container').style.display = 'none';
+}
+
+
+function showIntro() {
+    earnBadge('first_steps');
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'none'; 
+    document.getElementById('intro-screen').style.display = 'flex';
+}
+
+
+function showNovels() {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'flex';
+}
+
+
+
+    function initNetwork() {
+        const maxWeight = 15.63;
+        const maxBetweenness = 7.38;
+        const { nodes: nodesArray, edges: edgesArray } = novelsData[currentNovel];
+
+
+
+        function getGradientColor(value, max) {
+            const v = Math.min(value / max, 1);
+            const r = Math.round(255 - (255 - 128) * v);
+            const g = Math.round(165 - 165 * v);
+            const b = Math.round(0 + 128 * v);
+            return `rgb(${r},${g},${b})`;
+        }
+
+        const nodes = new vis.DataSet(nodesArray.map(n => {
+            const color = getGradientColor(n.gr || 0, 7); 
+            return {
+                id: n.id,
+                label: n.id.split(' ').pop(),
+                value: Math.sqrt(n.val) * 5,
+                color: {
+                    background: color,
+                    border: "#2c3e50",
+                    highlight: { background: "#fff", border: color }
+                },
+                title: `Weight: ${n.val}`
+            };
+        }));
+
+        const edges = new vis.DataSet(edgesArray.map(e => ({
+            from: e.from,
+            to: e.to,
+            width: Math.sqrt(e.w) * 2,
+            color: {
+                color: getGradientColor(e.w, maxWeight),
+                opacity: 0.7,
+                highlight: '#ff0000'
+            }
+        })));
+
+        const container = document.getElementById('mynetwork');
+        const options = {
+            nodes: {
+                shape: 'dot',
+                font: { color: '#ffffff', size: 16, face: 'Courier', strokeWidth: 2, strokeColor: '#000' },
+                borderWidth: 2,
+                shadow: true
+            },
+            edges: { smooth: { type: 'continuous', roundness: 0.5 } },
+            physics: {
+                enabled: true,
+                solver: 'forceAtlas2Based',
+                forceAtlas2Based: { gravitationalConstant: -500, centralGravity: 0.002, springLength: 400, avoidOverlap: 1 },
+                stabilization: { iterations: 1000 }
+            }
+        };
+        
+        const network = new vis.Network(container, { nodes, edges }, options);
+        network.once("stabilizationIterationsDone", () => network.setOptions({ physics: false }));
+        network.on("click", function (params) {
+        if (params.nodes.length > 0) {
+            clickedNodes.add(params.nodes[0]);
+
+            if (clickedNodes.size === 5) {
+                earnBadge('analytical_eye');
+            }
+        }
+    });
+    }
+    let quizIndex = 0;
+let quizScore = 0;
+let currentQuizNovel = null;
+
+
+function startQuiz(novel) {
+    if (!quizData[novel]) {
+        document.getElementById('quiz-box').style.display = 'none';
+        return;
+    }
+
+    currentQuizNovel = novel;
+    quizIndex = 0;
+    quizScore = 0;
+
+    document.getElementById('quiz-box').style.display = 'block';
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    const q = quizData[currentQuizNovel][quizIndex];
+
+    document.getElementById('quiz-question').textContent = q.question;
+
+    const answersDiv = document.getElementById('quiz-answers');
+    answersDiv.innerHTML = "";
+
+    q.answers.forEach(a => {
+        const btn = document.createElement("div");
+        btn.className = "quiz-answer";
+        btn.textContent = a.text;
+
+        btn.onclick = () => handleAnswer(btn, a.correct);
+        answersDiv.appendChild(btn);
+    });
+}
+
+function handleAnswer(button, isCorrect) {
+    const allButtons = document.querySelectorAll(".quiz-answer");
+
+    
+    allButtons.forEach(btn => {
+        btn.classList.add("disabled");
+    });
+
+    
+    if (isCorrect) {
+        button.classList.add("correct");
+        quizScore++;
+    } else {
+        button.classList.add("wrong");
+    }
+
+    
+    setTimeout(() => {
+        quizIndex++;
+        if (quizIndex < quizData[currentQuizNovel].length) {
+            showQuizQuestion();
+        } else {
+            showQuizResult();
+        }
+    }, 900);
+}
+
+function showQuizResult() {
+    earnBadge('detective_in_training');
+
+if (quizScore === quizData[currentQuizNovel].length) {
+    earnBadge('perfect_detective');
+}
+    document.getElementById('quiz-question').textContent =
+        `Score: ${quizScore} / ${quizData[currentQuizNovel].length}`;
+
+    document.getElementById('quiz-answers').innerHTML =
+        "<div style='font-size:12px;'>You have analysed the network. 📊</div>";
+}
+
+document.getElementById('legend-toggle').addEventListener('click', () => {
+    const content = document.getElementById('legend-content');
+    const btn = document.getElementById('legend-toggle');
+
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        btn.textContent = '–'; 
+    } else {
+        content.style.display = 'none';
+        btn.textContent = '+'; 
+    }
+});
+function showSummary() {
+    earnBadge('curious_mind');
+    if (!currentNovel || !summaries[currentNovel]) return;
+
+    document.getElementById('graph-container').style.display = 'none';
+    document.getElementById('summary-screen').style.display = 'block';
+
+    document.getElementById('summary-title').textContent =
+        summaries[currentNovel].title;
+
+    document.getElementById('summary-text').innerHTML =
+        summaries[currentNovel].text;
+
+    const img = document.getElementById('summary-image');
+
+    if (summaries[currentNovel].image) {
+        img.src = summaries[currentNovel].image;
+        img.style.display = 'block';
+    } else {
+        img.style.display = 'none';
+    }
+}
+function renderBadges() {
+    const container = document.getElementById('badges-container');
+    container.innerHTML = '';
+
+    badges.forEach(badge => {
+        const earned = earnedBadges.includes(badge.id);
+
+        const badgeEl = document.createElement('div');
+        badgeEl.className = 'badge';
+        badgeEl.style.width = '120px';
+        badgeEl.style.height = '140px';
+        badgeEl.style.display = 'flex';
+        badgeEl.style.flexDirection = 'column';
+        badgeEl.style.alignItems = 'center';
+        badgeEl.style.justifyContent = 'center';
+        badgeEl.style.border = '2px solid #8e0000';
+        badgeEl.style.borderRadius = '12px';
+        badgeEl.style.background = earned ? '#8e0000' : '#111';
+        badgeEl.style.color = earned ? '#fff' : '#666';
+        badgeEl.style.padding = '8px';
+        badgeEl.style.textAlign = 'center';
+        badgeEl.style.fontFamily = 'Courier New, monospace';
+        badgeEl.style.fontSize = '12px';
+
+        badgeEl.innerHTML = `
+            <img src="${badge.icon}" 
+                 style="width:60px; height:60px; margin-bottom:8px; filter:${earned ? 'none' : 'grayscale(100%)'}">
+            <b>${badge.name}</b>
+            <p style="margin:4px 0 0 0; font-size:11px;">${earned ? badge.description : 'Locked'}</p>
+        `;
+
+        container.appendChild(badgeEl);
+    });
+}
+
+function hideAllScreens() {
+  const screens = document.querySelectorAll('.screen');
+  screens.forEach(screen => screen.style.display = 'none');
+}
+
+function showScreen(screenId) {
+    hideAllScreens();
+
+    
+    const screen = document.getElementById(screenId);
+    if (screenId === 'start-screen' || screenId === 'main-menu' || screenId === 'intro-screen') {
+        screen.style.display = 'flex'; 
+    } else {
+        screen.style.display = 'block'; 
+    }
+
+    
+    window.scrollTo(0, 0);
+}
+function showStart() {
+  showScreen('start-screen');
+}
+
+function showNovels() {
+  showScreen('main-menu');
+}
+
+function showIntro() {
+  earnBadge('first_steps');
+  showScreen('intro-screen');
+}
+
+function showAchievements() {
+  showScreen('achievements-screen');
+  renderBadges();
+}
+
+function showGraphScreen() {
+  showScreen('graph-container');
+}
+
+function showAchievements() {
+    hideAllScreens();
+    document.getElementById('achievements-screen').style.display = 'block';
+    renderBadges();
+}
+
+function backToGraph() {
+    showScreen('graph-container');
+} 
+
+function resetAchievements() {
+    localStorage.removeItem('earnedBadges');
+    earnedBadges = [];
+    renderBadges();
+    alert('Achievements progress reset');
+}
+function showBadgeNotification(badge) {
+    const notif = document.getElementById('badge-notification');
+    if (!notif) return;
+
+    document.getElementById('badge-icon').src = badge.icon;
+    document.getElementById('badge-text').textContent = `Achievement unlocked: ${badge.name}`;
+
+    notif.classList.add('show');
+
+    
+    setTimeout(() => {
+        notif.classList.remove('show');
+    }, 3000);
+}
+    showStart();
+</script>
+<div id="badge-notification" >
+  <img id="badge-icon" src="" alt="Badge" />
+  <span id="badge-text"></span>
+</div>
+</body>
+</html>
