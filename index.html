@@ -1747,8 +1747,12 @@ function showAchievements() {
 }
 
 function backToGraph() {
-    showScreen('graph-container');
-} 
+    hideAllScreens();
+    document.getElementById('graph-container').style.display = 'block';
+
+    // ⚠️ ВАЖНО: пересоздаём сеть
+    initNetwork();
+}
 
 function resetAchievements() {
     localStorage.removeItem('earnedBadges');
