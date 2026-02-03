@@ -322,6 +322,116 @@
                 .menu-note {
                     max-width: 90%;
                 }
+}/* =========================
+   GLOBAL FIX FOR MOBILE
+========================= */
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* =========================
+   MOBILE ADAPTATION
+========================= */
+@media (max-width: 768px) {
+
+    h1 {
+        font-size: 20px;
+        text-align: center;
+    }
+
+    h2 {
+        font-size: 16px;
+    }
+
+    p {
+        font-size: 13px;
+    }
+
+    /* --- MENUS --- */
+
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .menu-grid-horizontal {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+
+    .menu-wrapper {
+        flex-direction: column;
+        gap: 20px;
+        padding: 10px;
+    }
+
+    .menu-note {
+        display: none;
+    }
+
+    .novel-btn {
+        width: 100%;
+        padding: 15px;
+        font-size: 13px;
+    }
+
+    /* --- BUTTONS --- */
+
+    .menu-buttons {
+        top: 5px;
+        right: 5px;
+        gap: 6px;
+    }
+
+    .back-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    /* --- QUIZ --- */
+
+    #quiz-box {
+        width: calc(100% - 20px);
+        right: 10px;
+        bottom: 10px;
+        font-size: 12px;
+    }
+
+    /* --- LEGEND --- */
+
+    .legend {
+        width: calc(100% - 20px);
+        left: 10px;
+        top: auto;
+        bottom: 10px;
+        font-size: 11px;
+    }
+
+    /* --- IMAGES --- */
+
+    .agatha-portrait,
+    .intro-image,
+    .novels-image,
+    .summary-image {
+        max-width: 90%;
+    }
+}
+
+/* =========================
+   TOUCH SUPPORT
+========================= */
+
+.novel-btn:active,
+.back-btn:active,
+.quiz-answer:active {
+    background: #8e0000;
+    color: #fff;
+    transform: scale(0.97);
 }
 
 
@@ -1384,23 +1494,54 @@ appearances.
         })));
 
         const container = document.getElementById('mynetwork');
+        const isMobile = window.innerWidth < 768;
         const options = {
             nodes: {
                 shape: 'dot',
-                font: { color: '#ffffff', size: 16, face: 'Courier', strokeWidth: 2, strokeColor: '#000' },
+                size: isMobile ? 18 : 10,
+                font: {
+                    color: '#ffffff',
+                    size: isMobile ? 18 : 16,
+                    face: 'Courier',
+                    strokeWidth: 2,
+                    strokeColor: '#000'
+                },
                 borderWidth: 2,
                 shadow: true
             },
-            edges: { smooth: { type: 'continuous', roundness: 0.5 } },
+            edges: {
+                smooth: {
+                    type: 'continuous',
+                    roundness: 0.5
+                }
+            },
             physics: {
                 enabled: true,
                 solver: 'forceAtlas2Based',
-                forceAtlas2Based: { gravitationalConstant: -500, centralGravity: 0.002, springLength: 400, avoidOverlap: 1 },
-                stabilization: { iterations: 1000 }
+                forceAtlas2Based: {
+                    gravitationalConstant: -500,
+                    centralGravity: 0.002,
+                    springLength: isMobile ? 250 : 400,
+                    avoidOverlap: 1
+                },
+                stabilization: {
+                    iterations: isMobile ? 600 : 1000
+                }
             }
         };
         
         const network = new vis.Network(container, { nodes, edges }, options);
+        /* ===== MOBILE LEGEND FIX ===== */
+        if (window.innerWidth < 768) {
+            const content = document.getElementById('legend-content');
+            const btn = document.getElementById('legend-toggle');
+
+            if (content && btn) {
+                content.style.display = 'none';
+                btn.textContent = '+';
+            }
+        }
+/* ============================ */
         network.once("stabilizationIterationsDone", () => network.setOptions({ physics: false }));
         network.on("click", function (params) {
         if (params.nodes.length > 0) {
