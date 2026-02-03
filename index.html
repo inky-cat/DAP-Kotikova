@@ -1718,22 +1718,10 @@ function showScreen(screenId) {
     
     window.scrollTo(0, 0);
 }
-function showStart() {
-  showScreen('start-screen');
-}
+
 
 function showNovels() {
   showScreen('main-menu');
-}
-
-function showIntro() {
-  earnBadge('first_steps');
-  showScreen('intro-screen');
-}
-
-function showAchievements() {
-  showScreen('achievements-screen');
-  renderBadges();
 }
 
 function showGraphScreen() {
@@ -1750,7 +1738,6 @@ function backToGraph() {
     hideAllScreens();
     document.getElementById('graph-container').style.display = 'block';
 
-    // ⚠️ ВАЖНО: пересоздаём сеть
     initNetwork();
 }
 
