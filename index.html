@@ -1327,31 +1327,17 @@ appearances.
 
     }
 
-    function showMenu() {
-    document.getElementById('graph-container').style.display = 'none';
-    document.getElementById('main-menu').style.display = 'flex';
+   function showMenu() {
+        showScreen('main-menu');
 }
-
 
     function showStart() {
-    document.getElementById('start-screen').style.display = 'flex';
-    document.getElementById('intro-screen').style.display = 'none';
-    document.getElementById('main-menu').style.display = 'none';
-    document.getElementById('graph-container').style.display = 'none';
+        showScreen('start-screen');
 }
 
-
-function showIntro() {
-    earnBadge('first_steps');
-    document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('main-menu').style.display = 'none'; 
-    document.getElementById('intro-screen').style.display = 'flex';
-}
-
-
-function showNovels() {
-    document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('main-menu').style.display = 'flex';
+    function showIntro() {
+        earnBadge('first_steps');
+        showScreen('intro-screen');
 }
 
 
